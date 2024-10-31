@@ -31,6 +31,36 @@
         </div>
     </section>
 
+    <!-- Login Form Section -->
+    <section id="login-section">
+        <h2>User Login</h2>
+        <form id="loginForm">
+            <label>Username: <input type="text" id="username" required></label><br>
+            <label>Password: <input type="password" id="password" required></label><br>
+            <button type="submit">Login</button>
+        </form>
+        <div id="loginResponse"></div>
+    </section>
+
+    <!-- User Creation Form Section -->
+    <section id="create-user-section">
+        <h2>Create New User</h2>
+        <form id="createUserForm">
+            <label>Username: <input type="text" id="newUsername" required></label><br>
+            <label>Email: <input type="email" id="newEmail" required></label><br>
+            <label>Password: <input type="password" id="newPassword" required></label><br>
+            <label>Role:
+                <select id="userRole" required>
+                    <option value="GUEST">Guest</option>
+                    <option value="USER">User</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+            </label><br>
+            <button type="submit">Create User</button>
+        </form>
+        <div id="createUserResponse"></div>
+    </section>
+
     <section class="features" id="features">
         <h2>Our Features</h2>
         <div class="features-grid">
@@ -57,14 +87,47 @@
         <p>&copy; 2024 NoteStream. All rights reserved.</p>
     </footer>
 
+    <!-- JavaScript for AJAX calls -->
     <script>
         $(document).ready(function() {
-            // Smooth scrolling for anchor links
-            $('a[href^="#"]').on('click', function(event) {
-                event.preventDefault();
-                $('html, body').animate({
-                    scrollTop: $($(this).attr('href')).offset().top - 70
-                }, 800);
+            // Login form submission
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                const username = $('#username').val();
+                const password = $('#password').val();
+
+                $.ajax({
+                    url: 'http://localhost:8080/user/login', // Your backend login endpoint
+                    type: 'POST',
+                    data: { username, password },
+                    success: function(response) {
+                        $('#loginResponse').text(response);
+                    },
+                    error: function() {
+                        $('#loginResponse').text('Error occurred during login.');
+                    }
+                });
+            });
+
+            // Create user form submission
+            $('#createUserForm').on('submit', function(e) {
+                e.preventDefault();
+                const newUsername = $('#newUsername').val();
+                const newEmail = $('#newEmail').val();
+                const newPassword = $('#newPassword').val();
+                const userRole = $('#userRole').val();
+
+                $.ajax({
+                    url: 'http://localhost:8080/user/create', // Your backend create user endpoint
+                    type: 'POST',
+                    data: { username: newUsername, email: newEmail, password: newPassword, role: userRole },
+                    success: function(response) {
+                        $('#createUserResponse').text(response);
+                    },
+                    error: function() {
+                        $('#createUserResponse').text('Error occurred during user creation.');
+                    }
+                });
             });
         });
     </script>
