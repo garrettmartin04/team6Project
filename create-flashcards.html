@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Flashcard Set</title>
+</head>
+<body>
+    <h1>Create Flashcard Set</h1>
+    <form id="flashcard-set-form">
+        <label for="title">Flashcard Set Title:</label>
+        <input type="text" id="title" name="title" required>
+
+        <div id="flashcards-container">
+            <!-- Flashcards will be added here dynamically -->
+        </div>
+        
+        <button type="button" onclick="addFlashcard()">Add Flashcard</button>
+        <button type="submit">Save Flashcard Set</button>
+    </form>
+
+    <script>
+        function addFlashcard() {
+            const container = document.getElementById('flashcards-container');
+            const flashcardDiv = document.createElement('div');
+            flashcardDiv.classList.add('flashcard');
+            flashcardDiv.innerHTML = `
+                <label>Question:</label>
+                <input type="text" class="flashcard-question" required>
+                <label>Answer:</label>
+                <input type="text" class="flashcard-answer" required>
+            `;
+            container.appendChild(flashcardDiv);
+        }
+
+        document.getElementById('flashcard-set-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const flashcards = Array.from(document.querySelectorAll('.flashcard')).map(flashcard => ({
+                question: flashcard.querySelector('.flashcard-question').value,
+                answer: flashcard.querySelector('.flashcard-answer').value
+            }));
+            
+            try {
+                const response = await fetch('/flashcards/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, flashcards })
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to create flashcard set.');
+            }
+        });
+    </script>
+</body>
+</html>
