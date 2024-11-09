@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Study Flashcards</title>
+</head>
+<body>
+    <h1>Study Flashcard Set</h1>
+    <div id="flashcard-container">
+        <p id="flashcard-question">Question: </p>
+        <p id="flashcard-answer" style="display:none;">Answer: </p>
+    </div>
+    <button onclick="showAnswer()">Show Answer</button>
+    <button onclick="nextFlashcard()">Next</button>
+
+    <script>
+        let flashcards = [];
+        let currentFlashcardIndex = 0;
+
+        async function loadFlashcards() {
+            try {
+                const response = await fetch('/flashcards/study');
+                const data = await response.json();
+                flashcards = data.flashcards;
+                displayFlashcard();
+            } catch (error) {
+                console.error('Error loading flashcards:', error);
+                alert('Failed to load flashcards.');
+            }
+        }
+
+        function displayFlashcard() {
+            const flashcard = flashcards[currentFlashcardIndex];
+            document.getElementById('flashcard-question').textContent = "Question: " + flashcard.question;
+            document.getElementById('flashcard-answer').textContent = "Answer: " + flashcard.answer;
+            document.getElementById('flashcard-answer').style.display = "none";
+        }
+
+        function showAnswer() {
+            document.getElementById('flashcard-answer').style.display = "block";
+        }
+
+        function nextFlashcard() {
+            currentFlashcardIndex = (currentFlashcardIndex + 1) % flashcards.length;
+            displayFlashcard();
+        }
+
+        // Load the flashcards when the page is loaded
+        document.addEventListener('DOMContentLoaded', loadFlashcards);
+    </script>
+</body>
+</html>
