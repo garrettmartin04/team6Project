@@ -1,63 +1,187 @@
 package com.example.NoteStream;
+
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.web.bind.annotation.CrossOrigin;
-@CrossOrigin(origins = "*")
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.*;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
     private List<User> users = new ArrayList<>();
-   
+    private Set<String> loggedInUsers = new HashSet<>();
 
-
-    // Example endpoint to create a new user
+    // Create user endpoint
     @PostMapping("/create")
     public ResponseEntity<String> createUser(@RequestParam String username, @RequestParam String email,
                                              @RequestParam String password, @RequestParam String role) {
         try {
-            // Convert the role string to a UserRole enum
             UserRole userRole = UserRole.valueOf(role.toUpperCase());
-
-            // Create a new User object
             User newUser = new User(username, email, password, userRole);
-
-            // Add the new User to the users list
             users.add(newUser);
-
             return ResponseEntity.ok("User created successfully!");
         } catch (IllegalArgumentException e) {
-            // Handle the case where the role is invalid
             return ResponseEntity.badRequest().body("Invalid role specified.");
-        } catch (Exception e) {
-            // Handle any other exceptions
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during user creation.");
         }
     }
 
-
-
-
-    // Example endpoint for login
+    // Login endpoint
     @PostMapping("/login")
-    public String loginUser(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<Map<String, String>> loginUser(@RequestParam String username, @RequestParam String password) {
         for (User user : users) {
             if (user.getUsername().equals(username) && user.login(password)) {
-                return "Login successful for user: " + username;
+                loggedInUsers.add(user.getUserID());
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Login successful for user: " + username);
+                response.put("userId", user.getUserID());
+                return ResponseEntity.ok(response);
             }
         }
-        return "Login failed";
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", "Login failed");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
-    // Example endpoint to get all users
+    // Logout endpoint
+    @PostMapping("/logout")
+    public ResponseEntity<String> logoutUser(@RequestParam String userId) {
+        for (User user : users) {
+            if (user.getUserID().equals(userId)) {
+                if (loggedInUsers.contains(userId)) {
+                    user.logout();
+                    loggedInUsers.remove(userId);
+                    return ResponseEntity.ok("Logout successful for user: " + user.getUsername());
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not logged in.");
+                }
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+    }
+
+    // Get all users
     @GetMapping("/all")
     public List<User> getAllUsers() {
         return users;
     }
-    
+
+    // Test endpoint
+    @GetMapping("/test")
+    public String testEndpoint() {
+        return "Server is running.";
+    }
+    @RestController
+    @RequestMapping("/flashcards")
+    public class FlashcardController {
+
+        private List<FlashcardSet> flashcardSets = new ArrayList<>();
+
+        // Create Flashcard Set
+        @PostMapping("/create")
+        public ResponseEntity<Map<String, String>> createFlashcardSet(@RequestBody Map<String, Object> request) {
+            String title = (String) request.get("title");
+            List<Map<String, String>> flashcardList = (List<Map<String, String>>) request.get("flashcards");
+            List<FlashcardSet.Flashcard> flashcards = new ArrayList<>();
+
+            for (Map<String, String> flashcardData : flashcardList) {
+                String question = flashcardData.get("question");
+                String answer = flashcardData.get("answer");
+                flashcards.add(new FlashcardSet.Flashcard(question, answer));
+            }
+
+            FlashcardSet newSet = new FlashcardSet(title, flashcards);
+            flashcardSets.add(newSet);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Flashcard set created successfully with title: " + title);
+            return ResponseEntity.ok(response);
+        }
+
+        // Study Flashcards
+        @GetMapping("/study")
+        public ResponseEntity<Map<String, Object>> studyFlashcards() {
+            if (flashcardSets.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "No flashcards available to study.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            FlashcardSet setToStudy = flashcardSets.get(0); // For simplicity, returning the first set
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Studying flashcard set: " + setToStudy.getTitle());
+            response.put("flashcards", setToStudy.getFlashcards());
+            return ResponseEntity.ok(response);
+        }
+
+    public class FlashcardSet {
+        private String id;
+        private String title;
+        private List<Flashcard> flashcards;
+
+        public FlashcardSet(String title, List<Flashcard> flashcards) {
+            this.id = UUID.randomUUID().toString();
+            this.title = title;
+            this.flashcards = flashcards;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public List<Flashcard> getFlashcards() {
+            return flashcards;
+        }
+
+        public static class Flashcard {
+            private String question;
+            private String answer;
+
+            public Flashcard(String question, String answer) {
+                this.question = question;
+                this.answer = answer;
+            }
+
+            public String getQuestion() {
+                return question;
+            }
+
+            public String getAnswer() {
+                return answer;
+            }
+        }
+    }
+    @Configuration
+    public class WebConfig implements WebMvcConfigurer {
+        @Override
+        public void addViewControllers(ViewControllerRegistry registry) {
+            registry.addViewController("/").setViewName("forward:/index.html");
+        }
+    }
+    @Controller
+    public class FlashcardPageController {
+
+        @GetMapping("/create-flashcards")
+        public String createFlashcardsPage() {
+            return "create-flashcards"; // This will load create-flashcards.html from the static folder
+        }
+
+        @GetMapping("/study-flashcards")
+        public String studyFlashcardsPage() {
+            return "study-flashcards"; // This will load study-flashcards.html from the static folder
+        }
+    }
+  }
+}
     @GetMapping("/user/test")
     public String testEndpoint() {
         return "This is a test endpoint to confirm the application is running.";
