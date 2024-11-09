@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Study Flashcards</title>
+</head>
+<body>
+    <h1>Study Flashcard Set</h1>
+
+    <label for="flashcard-set">Choose a flashcard set:</label>
+    <select id="flashcard-set"></select>
+    <button onclick="loadSelectedSet()">Start Studying</button>
+
+    <div id="flashcard-container" style="display:none;">
+        <p id="flashcard-question">Question: </p>
+        <p id="flashcard-answer" style="display:none;">Answer: </p>
+        <button onclick="showAnswer()">Show Answer</button>
+        <button onclick="nextFlashcard()">Next</button>
+    </div>
+
+    <script>
+        let flashcards = [];
+        let currentFlashcardIndex = 0;
+
+        async function loadAllSets() {
+            try {
+                const response = await fetch('/flashcards/all-sets');
+                const sets = await response.json();
+                const dropdown = document.getElementById('flashcard-set');
+
+                sets.forEach(set => {
+                    const option = document.createElement('option');
+                    option.value = set.id;
+                    option.textContent = set.title;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading flashcard sets:', error);
+                alert('Failed to load flashcard sets.');
+            }
+        }
+
+        async function loadSelectedSet() {
+    const setId = document.getElementById('flashcard-set').value; // Retrieve selected setId
+    try {
+        const response = await fetch(`/flashcards/study?setId=${setId}`); // Include setId in the request
+        const data = await response.json();
+        flashcards = data.flashcards;
+        currentFlashcardIndex = 0;
+        displayFlashcard();
+        document.getElementById('flashcard-container').style.display = 'block';
+    } catch (error) {
+        console.error('Error loading flashcards:', error);
+        alert('Failed to load flashcard set.');
+    }
+}
+
+        function displayFlashcard() {
+            const flashcard = flashcards[currentFlashcardIndex];
+            document.getElementById('flashcard-question').textContent = "Question: " + flashcard.question;
+            document.getElementById('flashcard-answer').textContent = "Answer: " + flashcard.answer;
+            document.getElementById('flashcard-answer').style.display = "none";
+        }
+
+        function showAnswer() {
+            document.getElementById('flashcard-answer').style.display = "block";
+        }
+
+        function nextFlashcard() {
+            currentFlashcardIndex = (currentFlashcardIndex + 1) % flashcards.length;
+            displayFlashcard();
+        }
+
+        // Load all flashcard sets when the page loads
+        document.addEventListener('DOMContentLoaded', loadAllSets);
+    </script>
+</body>
+</html>
