@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Friends - NoteStream</title>
+  <style>
+    /* Copy styles from index.html */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      line-height: 1.6;
+      background-color: #f8f9fa;
+    }
+
+    .header, .footer {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+    }
+
+    .header {
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .section {
+      padding: 4rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      margin-top: 4rem;
+    }
+
+    .friends-list, .friend-requests {
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 2rem;
+    }
+
+    .friends-list h3, .friend-requests h3 {
+      color: #1a202c;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="nav">
+      <div class="logo">
+        <h1>NoteStream</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="section" id="friends-content">
+    <h2>Friends</h2>
+    <div class="friends-list">
+      <h3>Current Friends</h3>
+      <ul>
+        <li>Friend 1</li>
+        <li>Friend 2</li>
+        <li>Friend 3</li>
+        <!-- Add more friends here -->
+      </ul>
+    </div>
+    <div class="friend-requests">
+      <h3>Pending Friend Requests</h3>
+      <ul>
+        <li>Request from User A</li>
+        <li>Request from User B</li>
+        <!-- Add more friend requests here -->
+      </ul>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2024 NoteStream. All rights reserved.</p>
+  </footer>
+</body>
+</html>

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notes</title>
+  <title>Notes - NoteStream</title>
   <style>
-    /* Apply styles similar to index.html */
+    /* Copy the styles from index.html */
     * {
       margin: 0;
       padding: 0;
@@ -18,10 +18,13 @@
       background-color: #f8f9fa;
     }
 
-    .header {
+    .header, .footer {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       padding: 1rem;
+    }
+
+    .header {
       position: fixed;
       width: 100%;
       top: 0;
@@ -47,32 +50,43 @@
       font-weight: 500;
     }
 
-    .content {
+    .section {
       padding: 4rem 1rem;
       max-width: 800px;
-      margin: 6rem auto 2rem;
-      text-align: center;
+      margin: 0 auto;
+      margin-top: 4rem;
     }
 
-    .content h2 {
-      font-size: 2.5rem;
+    .note-form, .saved-notes {
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 2rem;
+    }
+
+    .note-form h3, .saved-notes h3 {
       color: #1a202c;
+    }
+
+    .form-group {
       margin-bottom: 1rem;
     }
 
-    .content p {
-      font-size: 1.25rem;
-      color: #4a5568;
-      margin-bottom: 2rem;
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
     }
 
-    .notes-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ddd;
     }
 
-    .action-button {
+    .cta-button {
       display: inline-block;
       background: #667eea;
       color: white;
@@ -80,19 +94,19 @@
       border-radius: 0.5rem;
       text-decoration: none;
       font-weight: bold;
-      transition: transform 0.2s;
+      cursor: pointer;
+      margin-top: 1rem;
     }
 
-    .action-button:hover {
-      transform: translateY(-2px);
+    .edit-delete-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
     }
 
     .footer {
-      background: #1a202c;
-      color: white;
-      padding: 2rem 1rem;
       text-align: center;
-      margin-top: 2rem;
+      padding: 2rem 1rem;
     }
   </style>
 </head>
@@ -112,17 +126,109 @@
     </div>
   </header>
 
-  <section class="content">
-    <h2>Your Notes</h2>
-    <p>Take and organize your notes in one place. Create new notes or view existing ones to keep track of everything important.</p>
-    <div class="notes-actions">
-      <a href="create-note.html" class="action-button">Create Note</a>
-      <a href="view-notes.html" class="action-button">View Notes</a>
+  <section class="section" id="notes-content">
+    <h2>Create a New Note</h2>
+    <div class="note-form">
+      <h3>New Note</h3>
+      <form id="noteForm">
+        <div class="form-group">
+          <label for="noteTitle">Note Title</label>
+          <input type="text" id="noteTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="noteContent">Note Content</label>
+          <textarea id="noteContent" rows="10" required></textarea>
+        </div>
+        <button type="button" class="cta-button" onclick="saveNote()">Save Note</button>
+      </form>
+    </div>
+
+    <div class="saved-notes">
+      <h3>Saved Notes</h3>
+      <ul id="notesList">
+        <!-- Saved notes will be displayed here -->
+      </ul>
     </div>
   </section>
 
   <footer class="footer">
     <p>&copy; 2024 NoteStream. All rights reserved.</p>
   </footer>
+
+  <script>
+    const notesList = document.getElementById('notesList');
+    let editIndex = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+      savedNotes.forEach((note, index) => addNoteToList(note, index));
+    });
+
+    function saveNote() {
+      const noteTitle = document.getElementById('noteTitle').value;
+      const noteContent = document.getElementById('noteContent').value;
+
+      if (noteTitle && noteContent) {
+        const note = { title: noteTitle, content: noteContent };
+        let savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+
+        if (editIndex !== null) {
+          savedNotes[editIndex] = note;
+          editIndex = null;
+        } else {
+          savedNotes.push(note);
+        }
+
+        localStorage.setItem('notes', JSON.stringify(savedNotes));
+        updateNotesList(savedNotes);
+
+        document.getElementById('noteForm').reset();
+      }
+    }
+
+    function updateNotesList(notes) {
+      notesList.innerHTML = '';
+      notes.forEach((note, index) => addNoteToList(note, index));
+    }
+
+    function addNoteToList(note, index) {
+      const noteItem = document.createElement('li');
+      noteItem.innerHTML = `<strong>${note.title}</strong>: ${note.content}`;
+      
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'edit-delete-buttons';
+
+      const editButton = document.createElement('button');
+      editButton.textContent = 'Edit';
+      editButton.className = 'cta-button';
+      editButton.onclick = () => editNote(index);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.className = 'cta-button';
+      deleteButton.onclick = () => deleteNote(index);
+
+      buttonContainer.appendChild(editButton);
+      buttonContainer.appendChild(deleteButton);
+      noteItem.appendChild(buttonContainer);
+
+      notesList.appendChild(noteItem);
+    }
+
+    function deleteNote(index) {
+      let savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+      savedNotes.splice(index, 1);
+      localStorage.setItem('notes', JSON.stringify(savedNotes));
+      updateNotesList(savedNotes);
+    }
+
+    function editNote(index) {
+      const savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+      const note = savedNotes[index];
+      document.getElementById('noteTitle').value = note.title;
+      document.getElementById('noteContent').value = note.content;
+      editIndex = index;
+    }
+  </script>
 </body>
 </html>
