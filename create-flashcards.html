@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Flashcard Set</title>
+  <script>
+    function addFlashcardField() {
+      const container = document.getElementById('flashcards-container');
+      const flashcardDiv = document.createElement('div');
+      flashcardDiv.innerHTML = `
+        <input type="text" name="question" placeholder="Question" required>
+        <input type="text" name="answer" placeholder="Answer" required>
+        <hr>
+      `;
+      container.appendChild(flashcardDiv);
+    }
+
+    async function submitFlashcardSet(event) {
+      event.preventDefault();
+      const title = document.getElementById('set-title').value;
+      const flashcardElements = document.querySelectorAll('#flashcards-container > div');
+      const flashcards = Array.from(flashcardElements).map(div => {
+        return {
+          question: div.querySelector('input[name="question"]').value,
+          answer: div.querySelector('input[name="answer"]').value
+        };
+      });
+
+      try {
+        const response = await fetch('/flashcards/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, flashcards })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          alert("Error: " + errorText);
+          return;
+        }
+
+        const data = await response.text();
+        alert(data); // Displays success message with the ID
+        window.location.href = '/'; // Redirect as needed
+      } catch (error) {
+        console.error('Error:', error);
+        alert("An unexpected error occurred.");
+      }
+    }
+
+    window.onload = function() {
+      // Optionally, add an initial flashcard field
+      addFlashcardField();
+    };
+  </script>
+</head>
+<body>
+  <h1>Create a New Flashcard Set</h1>
+  <form onsubmit="submitFlashcardSet(event)">
+    <input type="text" id="set-title" placeholder="Set Title" required><br><br>
+    <div id="flashcards-container">
+      <!-- Flashcards will be added here -->
+    </div>
+    <button type="button" onclick="addFlashcardField()">Add Flashcard</button><br><br>
+    <button type="submit">Create Flashcard Set</button>
+  </form>
+</body>
+</html>
+

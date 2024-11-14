@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Study Flashcards</title>
+  <script>
+    let currentSet = null;
+    let currentFlashcardIndex = 0;
+    let score = 0;
+
+    async function loadFlashcardSets() {
+      const response = await fetch('/flashcards/all');
+      const sets = await response.json();
+      const select = document.getElementById('flashcard-set-select');
+
+      sets.forEach(set => {
+        const option = document.createElement('option');
+        option.value = set.id;
+        option.textContent = set.title;
+        select.appendChild(option);
+      });
+    }
+
+    async function startStudying() {
+      const setId = document.getElementById('flashcard-set-select').value;
+      const response = await fetch(`/flashcards/get?setId=${setId}`);
+      
+      if (!response.ok) {
+        alert("Failed to load flashcard set.");
+        return;
+      }
+
+      currentSet = await response.json();
+      document.getElementById('study-container').style.display = 'block';
+      document.getElementById('selection-container').style.display = 'none';
+      showFlashcard();
+    }
+
+    function showFlashcard() {
+      if (currentFlashcardIndex < currentSet.flashcards.length) {
+        const flashcard = currentSet.flashcards[currentFlashcardIndex];
+        document.getElementById('flashcard-question').textContent = flashcard.question;
+        document.getElementById('flashcard-answer').textContent = ''; // Hide answer initially
+      } else {
+        // Study session finished
+        document.getElementById('study-container').innerHTML = `<h2>Study session completed!</h2>`;
+      }
+    }
+
+    function revealAnswer() {
+      const flashcard = currentSet.flashcards[currentFlashcardIndex];
+      document.getElementById('flashcard-answer').textContent = flashcard.answer;
+    }
+
+    function nextFlashcard() {
+      currentFlashcardIndex++;
+      showFlashcard();
+    }
+
+    window.onload = loadFlashcardSets;
+  </script>
+</head>
+<body>
+  <div id="selection-container">
+    <h1>Select a Flashcard Set to Study</h1>
+    <select id="flashcard-set-select">
+      <option value="" disabled selected>Select a flashcard set</option>
+    </select>
+    <button onclick="startStudying()">Start Studying</button>
+  </div>
+
+  <div id="study-container" style="display:none;">
+    <h2 id="flashcard-question"></h2>
+    <p id="flashcard-answer" style="font-weight:bold;"></p>
+    <button onclick="revealAnswer()">Reveal Answer</button>
+    <button onclick="nextFlashcard()">Next Flashcard</button>
+  </div>
+</body>
+</html>
+
+
