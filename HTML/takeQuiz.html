@@ -1,73 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Take Quiz</title>
-  <script>
-    let currentQuiz = null;
-    let currentQuestionIndex = 0;
-    let score = 0;
-
-    async function loadQuizzes() {
-      const response = await fetch('/quizzes/all');
-      const quizzes = await response.json();
-      const select = document.getElementById('quiz-select');
-
-      quizzes.forEach(quiz => {
-        const option = document.createElement('option');
-        option.value = quiz.id;
-        option.textContent = quiz.title;
-        select.appendChild(option);
-      });
-    }
-
-    async function startQuiz() {
-      const quizId = document.getElementById('quiz-select').value;
-      const response = await fetch(`/quizzes/get?quizId=${quizId}`);
-      currentQuiz = await response.json();
-      document.getElementById('quiz-container').style.display = 'block';
-      document.getElementById('quiz-selection').style.display = 'none';
-      showQuestion();
-    }
-
-    function showQuestion() {
-      if (currentQuestionIndex < currentQuiz.questions.length) {
-        const question = currentQuiz.questions[currentQuestionIndex];
-        document.getElementById('question-prompt').textContent = question.prompt;
-      } else {
-        // Quiz finished
-        document.getElementById('quiz-container').innerHTML = `<h2>Your score: ${score}/${currentQuiz.questions.length}</h2>`;
-      }
-    }
-
-    function submitAnswer() {
-      const answer = document.getElementById('answer-input').value.trim();
-      const correctAnswer = currentQuiz.questions[currentQuestionIndex].answer.trim();
-      if (answer.toLowerCase() === correctAnswer.toLowerCase()) {
-        score++;
-      }
-      currentQuestionIndex++;
-      document.getElementById('answer-input').value = '';
-      showQuestion();
-    }
-
-    window.onload = loadQuizzes;
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div id="quiz-selection">
-    <h1>Select a Quiz to Take</h1>
-    <select id="quiz-select">
-      <option value="" disabled selected>Select a quiz</option>
-    </select>
-    <button onclick="startQuiz()">Start Quiz</button>
-  </div>
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+<nav class="bg-white shadow-lg">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex space-x-4">
+                <button 
+                    onclick="window.location.href='index.html'" 
+                    class="px-4 py-2 rounded-md hover:bg-gray-100 text-gray-700 font-medium"
+                >
+                    Home
+                </button>
+                <button 
+                    onclick="window.location.href='createQuiz.html'" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+                >
+                    Create Quiz
+                </button>
+                <button 
+                    onclick="window.location.href='takeQuiz.html'" 
+                    class="px-4 py-2 rounded-md hover:bg-gray-100 text-gray-700 font-medium"
+                >
+                    Take Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
 
-  <div id="quiz-container" style="display:none;">
-    <h2 id="question-prompt"></h2>
-    <input type="text" id="answer-input" placeholder="Your Answer">
-    <button onclick="submitAnswer()">Submit Answer</button>
-  </div>
+    <div class="max-w-3xl mx-auto py-8">
+        <div class="bg-white rounded-lg shadow-xl p-8">
+            <div class="border-b pb-6 mb-6">
+                <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">
+                    Take a Quiz
+                </h1>
+                
+                <!-- Quiz Selection Section -->
+                <div id="quiz-selection" class="space-y-4">
+                    <select 
+                        id="quizSelect" 
+                        onchange="loadQuiz()"
+                        class="w-full p-2 border rounded-md"
+                    >
+                        <option value="">Select a quiz</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quiz Information -->
+            <div id="quiz-info" class="hidden space-y-4 mb-6">
+                <div class="flex justify-between items-center">
+                    <h2 id="quiz-title" class="text-xl font-semibold"></h2>
+                    <div class="flex space-x-4">
+                        <span id="time-limit" class="text-gray-600"></span>
+                        <span id="passing-score" class="text-gray-600"></span>
+                    </div>
+                </div>
+                <div id="timer" class="text-right font-bold text-lg hidden">
+                    Time Remaining: <span id="time-remaining"></span>
+                </div>
+            </div>
+
+            <!-- Quiz Content -->
+            <div id="quiz-content" class="hidden space-y-6">
+                <div id="questions-container" class="space-y-6 mb-8 p-4 bg-gray-50 rounded-lg min-h-[200px]">
+                    <!-- Questions will be loaded here -->
+                </div>
+
+                <div class="flex space-x-4 pt-6">
+                    <button 
+                        onclick="submitQuiz()"
+                        id="submit-button"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                        Submit Quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-section" class="hidden space-y-6">
+                <div class="border-t pt-6">
+                    <h2 class="text-xl font-semibold mb-4">Quiz Results</h2>
+                    <div class="space-y-4">
+                        <div id="score-display" class="text-center p-4 rounded-lg bg-gray-50">
+                            <p class="text-2xl font-bold mb-2">Your Score: <span id="final-score"></span>%</p>
+                            <p id="pass-fail" class="text-lg"></p>
+                        </div>
+                        <div id="detailed-results" class="space-y-4">
+                            <!-- Detailed results will be shown here -->
+                        </div>
+                    </div>
+                </div>
+                <button 
+                    onclick="retryQuiz()"
+                    id="retry-button"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 hidden"
+                >
+                    Retry Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuiz = null;
+        let timer = null;
+        let timeRemaining = 0;
+
+        // Load available quizzes when page loads
+        window.onload = function() {
+            loadAvailableQuizzes();
+        };
+
+        function loadAvailableQuizzes() {
+            const select = document.getElementById('quizSelect');
+            select.innerHTML = '<option value="">Select a quiz</option>';
+
+            // Get all items from localStorage
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('quiz_') && !key.includes('draft')) {
+                    const quiz = JSON.parse(localStorage.getItem(key));
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = quiz.title;
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        function loadQuiz() {
+            const quizKey = document.getElementById('quizSelect').value;
+            if (!quizKey) return;
+
+            currentQuiz = JSON.parse(localStorage.getItem(quizKey));
+            
+            // Show quiz info
+            document.getElementById('quiz-info').classList.remove('hidden');
+            document.getElementById('quiz-content').classList.remove('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+            
+            document.getElementById('quiz-title').textContent = currentQuiz.title;
+            document.getElementById('time-limit').textContent = `Time Limit: ${currentQuiz.timeLimit} minutes`;
+            document.getElementById('passing-score').textContent = `Passing Score: ${currentQuiz.passingScore}%`;
+
+            // Shuffle questions if enabled
+            let questions = [...currentQuiz.questions];
+            if (currentQuiz.settings.shuffleQuestions) {
+                questions = shuffleArray(questions);
+            }
+
+            // Display questions
+            const container = document.getElementById('questions-container');
+            container.innerHTML = questions.map((question, index) => `
+                <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
+                    <h3 class="text-lg font-medium mb-4">Question ${index + 1}</h3>
+                    <p class="mb-4">${question.text}</p>
+                    <div class="space-y-2">
+                        ${question.options.map((option, optIndex) => `
+                            <div class="flex items-center">
+                                <input 
+                                    type="radio" 
+                                    name="q${index}" 
+                                    value="${optIndex}"
+                                    class="mr-2"
+                                >
+                                <label>${option.text}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // Start timer if time limit is set
+            if (currentQuiz.timeLimit > 0) {
+                startTimer(currentQuiz.timeLimit * 60);
+            }
+        }
+
+        function startTimer(seconds) {
+            timeRemaining = seconds;
+            document.getElementById('timer').classList.remove('hidden');
+            updateTimerDisplay();
+
+            if (timer) clearInterval(timer);
+            timer = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timer);
+                    submitQuiz(true);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('time-remaining').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function submitQuiz(timeUp = false) {
+            if (timer) clearInterval(timer);
+            
+            if (timeUp) {
+                alert('Time is up! Your quiz will be submitted automatically.');
+            }
+
+            const answers = [];
+            const questions = currentQuiz.questions;
+            let correctAnswers = 0;
+
+            questions.forEach((question, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selected) {
+                    const selectedIndex = parseInt(selected.value);
+                    const isCorrect = question.options[selectedIndex].isCorrect;
+                    if (isCorrect) correctAnswers++;
+                    
+                    answers.push({
+                        questionIndex: index,
+                        selected: selectedIndex,
+                        correct: isCorrect
+                    });
+                }
+            });
+
+            const score = Math.round((correctAnswers / questions.length) * 100);
+            const passed = score >= currentQuiz.passingScore;
+
+            // Show results
+            document.getElementById('quiz-content').classList.add('hidden');
+            document.getElementById('results-section').classList.remove('hidden');
+            
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('pass-fail').textContent = passed ? 'PASSED' : 'FAILED';
+            document.getElementById('pass-fail').className = 
+                passed ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
+
+            // Show retry button if allowed
+            if (currentQuiz.settings.allowRetry) {
+                document.getElementById('retry-button').classList.remove('hidden');
+            }
+
+            // Show detailed results if enabled
+            if (currentQuiz.settings.showResultsImmediately) {
+                showDetailedResults(answers);
+            }
+        }
+
+        function showDetailedResults(answers) {
+            const detailedResults = document.getElementById('detailed-results');
+            detailedResults.innerHTML = answers.map((answer, index) => `
+                <div class="p-4 bg-white rounded-lg shadow">
+                    <h4 class="font-medium">Question ${index + 1}</h4>
+                    <p class="mt-2">${currentQuiz.questions[answer.questionIndex].text}</p>
+                    <p class="mt-2 ${answer.correct ? 'text-green-600' : 'text-red-600'}">
+                        ${answer.correct ? 'Correct!' : 'Incorrect'}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function retryQuiz() {
+            loadQuiz();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+    
+
 </body>
 </html>
-
