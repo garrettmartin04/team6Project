@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Notes - NoteStream</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Add styles as needed */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .note-section {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .note-section h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .note-list li {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .note-actions button {
+            margin-right: 0.5rem;
+        }
+    </style>
+    <script>
+        let currentUserId = null; // Set this to the logged-in user's ID
+
+        // Function to create a new note
+        async function createNote() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+
+            if (!title || !content) {
+                alert('Please enter both a title and content.');
+                return;
+            }
+
+            const response = await fetch(`/notes/create?userId=${currentUserId}&title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                alert('Note created successfully.');
+                document.getElementById('noteTitle').value = '';
+                document.getElementById('noteContent').value = '';
+                loadNotes();
+            } else {
+                const error = await response.text();
+                alert('Error: ' + error);
+            }
+        }
+
+        // Function to load accessible notes
+        async function loadNotes() {
+            const response = await fetch(`/notes/accessible?userId=${currentUserId}`);
+            if (response.ok) {
+                const notes = await response.json();
+                const noteList = document.getElementById('noteList');
+                noteList.innerHTML = '';
+                if (notes.length === 0) {
+                    noteList.innerHTML = '<p>No notes available.</p>';
+                } else {
+                    notes.forEach(note => {
+                        const li = document.createElement('li');
+						li.setAttribute('data-note-id', note.noteId);
+
+                        li.textContent = note.title;
+
+                        const buttonContainer = document.createElement('div');
+
+                        const viewButton = document.createElement('button');
+                        viewButton.textContent = 'View/Edit';
+                        viewButton.onclick = () => viewNote(note.noteId);
+                        buttonContainer.appendChild(viewButton);
+
+                        // Check if the current user is the owner of the note
+                        if (note.ownerId === currentUserId) {
+                            const manageCollaboratorsButton = document.createElement('button');
+                            manageCollaboratorsButton.textContent = 'Manage Collaborators';
+                            manageCollaboratorsButton.onclick = () => manageCollaborators(note.noteId);
+                            buttonContainer.appendChild(manageCollaboratorsButton);
+                        }
+
+                        li.appendChild(buttonContainer);
+                        noteList.appendChild(li);
+                    });
+                }
+            } else {
+                console.error('Failed to load notes.');
+            }
+        }
+
+        // Function to view/edit a note
+        async function viewNote(noteId) {
+            // For simplicity, we'll fetch the note content and allow the user to edit it via prompt
+            const response = await fetch(`/notes/${noteId}?userId=${currentUserId}`);
+            if (response.ok) {
+                const note = await response.json();
+                const newContent = prompt('Edit note content:', note.content);
+                if (newContent !== null) {
+                    const editResponse = await fetch(`/notes/${noteId}/edit?userId=${currentUserId}&newContent=${encodeURIComponent(newContent)}`, {
+                        method: 'POST'
+                    });
+                    if (editResponse.ok) {
+                        alert('Note updated.');
+                        loadNotes();
+                    } else {
+                        const error = await editResponse.text();
+                        alert('Error: ' + error);
+                    }
+                }
+            } else {
+                const error = await response.text();
+                alert('Error: ' + error);
+            }
+        }
+
+        // Function to manage collaborators
+        function manageCollaborators(noteId) {
+    // Find the note item in the DOM
+    const noteItems = document.querySelectorAll('#noteList li');
+    noteItems.forEach(li => {
+        if (li.getAttribute('data-note-id') === noteId) {
+            // Check if the collaborator form already exists
+            if (!li.querySelector('.collaborator-form')) {
+                const collaboratorForm = document.createElement('div');
+                collaboratorForm.className = 'collaborator-form';
+                collaboratorForm.style.marginTop = '1rem';
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = 'Enter friend\'s username';
+                input.style.marginRight = '0.5rem';
+
+                const addButton = document.createElement('button');
+                addButton.textContent = 'Add Collaborator';
+                addButton.onclick = () => {
+                    const collaboratorUsername = input.value.trim();
+                    if (collaboratorUsername) {
+                        addCollaborator(noteId, collaboratorUsername);
+                    } else {
+                        alert('Please enter a username.');
+                    }
+                };
+
+                collaboratorForm.appendChild(input);
+                collaboratorForm.appendChild(addButton);
+                li.appendChild(collaboratorForm);
+            }
+        }
+    });
+}
+
+        // Function to add a collaborator
+        async function addCollaborator(noteId, collaboratorUsername) {
+            const response = await fetch(`/user/getByUsername?username=${collaboratorUsername}`);
+            if (response.ok) {
+                const collaborator = await response.json();
+                const collaboratorId = collaborator.userID;
+                const ownerId = currentUserId;
+                const addResponse = await fetch(`/notes/${noteId}/addCollaborator?ownerId=${ownerId}&collaboratorId=${collaboratorId}`, {
+                    method: 'POST'
+                });
+                if (addResponse.ok) {
+                    alert('Collaborator added.');
+                } else {
+                    const error = await addResponse.text();
+                    alert('Error: ' + error);
+                }
+            } else {
+                alert('User not found.');
+            }
+			// Check if the collaborator is a friend
+const friendsResponse = await fetch(`/user/${ownerId}/friends`);
+if (friendsResponse.ok) {
+    const friends = await friendsResponse.json();
+    const isFriend = friends.some(friend => friend.userId === collaboratorId);
+    if (!isFriend) {
+        alert('You can only add friends as collaborators.');
+        return;
+    }
+} else {
+    alert('Failed to retrieve friends list.');
+    return;
+}
+        }
+
+        // On page load
+        window.onload = function() {
+            // You should set currentUserId based on your authentication logic
+            currentUserId = localStorage.getItem('userId');
+            if (!currentUserId) {
+                alert('You must be logged in to view this page.');
+                window.location.href = 'login.html';
+            } else {
+                loadNotes();
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav">
+            <div class="logo">
+                <h1>NoteStream</h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html#home">Home</a></li>
+                    <li><a href="index.html#features">Features</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="friends.html">Friends</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <section class="section">
+            <h1>Your Notes</h1>
+
+            <!-- Create Note -->
+            <div class="note-section">
+                <h2>Create a New Note</h2>
+                <input type="text" id="noteTitle" placeholder="Note Title" style="width: 100%; margin-bottom: 1rem;">
+                <textarea id="noteContent" placeholder="Note Content" rows="5" style="width: 100%;"></textarea>
+                <button onclick="createNote()" style="margin-top: 1rem;">Create Note</button>
+            </div>
+
+            <!-- List of Notes -->
+            <div class="note-section">
+                <h2>Your Accessible Notes</h2>
+                <ul id="noteList" class="note-list">
+                    <!-- Notes will be populated here -->
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 NoteStream. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+

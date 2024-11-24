@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Page</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title">Welcome Back</h1>
+    </div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label> <!-- Changed from Email to Username -->
+        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" class="submit-button">Sign In</button>
+      <div style="text-align: center; margin-top: 1rem;">
+        <button type="button" onclick="window.location.href='createAccount.html'" class="submit-button create-account-button">
+          Create Account
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Include your JavaScript code -->
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the form from submitting traditionally
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      fetch('/user/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }, // Correct Content-Type
+    body: JSON.stringify({
+      username: username,
+      password: password
+    })
+  })
+      .then(response => response.json())
+      .then(data => {
+        if (data.userId) {
+          localStorage.setItem('userId', data.userId);
+          alert('Login successful!');
+          window.location.href = 'index.html'; // Redirect to home or dashboard
+        } else {
+          alert(data.message || 'Login failed.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+
+    // You can move the logout function to a separate JS file or include it on pages where it's needed
+    function logout() {
+      const userId = localStorage.getItem('userId');
+      fetch('/user/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          userId: userId
+        })
+      })
+      .then(response => response.text())
+      .then(data => {
+        localStorage.removeItem('userId');
+        alert('Logged out successfully.');
+        window.location.href = 'login.html';
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+  </script>
+</body>
+</html>

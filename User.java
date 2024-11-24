@@ -1,64 +1,94 @@
 package com.example.NoteStream;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
- // enum to represent the role of a user.
- 
 enum UserRole {
     GUEST,
     USER,
     ADMIN
 }
 
-
- // user 
- 
 public class User {
-
-    // Attributes
-    public String userID;
-    public String username;
-    public String email;
+    private String userID;
+    private String username;
+    private String email;
     private String password;
-    public UserRole role;
-    private List<Task> assignedTasks;
+    private UserRole role;
 
-    
-     //constructor to initialize a new user.
+    // New fields for friendship management
+    private List<User> friends;
+    private List<FriendRequest> sentRequests;
+    private List<FriendRequest> receivedRequests;
 
     public User(String username, String email, String password, UserRole role) {
         this.userID = UUID.randomUUID().toString();
         this.username = username;
         this.email = email;
-        this.password = password; 
+        this.password = password;
         this.role = role;
-        this.assignedTasks = new ArrayList<>();
+
+        // Initialize new lists
+        this.friends = new ArrayList<>();
+        this.sentRequests = new ArrayList<>();
+        this.receivedRequests = new ArrayList<>();
     }
 
-    
-    class Task {
-        private String taskID;
-        private String description;
+    // Existing methods...
 
-        public Task(String description) {
-            this.taskID = UUID.randomUUID().toString();
-            this.description = description;
-        }
+    // Getters and setters for new fields
+    public String getUserID() {
+        return userID;
+    }
 
-        // getters and setters for taskID and description
-        public String getTaskID() {
-            return taskID;
-        }
+    public String getUsername() {
+        return username;
+    }
 
-        public String getDescription() {
-            return description;
+    public List<User> getFriends() {
+        return friends;
+    }
+
+    public List<FriendRequest> getSentRequests() {
+        return sentRequests;
+    }
+
+    public List<FriendRequest> getReceivedRequests() {
+        return receivedRequests;
+    }
+
+    // Methods to manage friends
+    public void addFriend(User friend) {
+        if (!friends.contains(friend)) {
+            friends.add(friend);
         }
     }
-    
-     // simulates user login by verifying the password.
+
+    public void removeFriend(User friend) {
+        friends.remove(friend);
+    }
+
+    // Methods to manage friend requests
+    public void sendFriendRequest(FriendRequest request) {
+        sentRequests.add(request);
+    }
+
+    public void receiveFriendRequest(FriendRequest request) {
+        receivedRequests.add(request);
+    }
+
+    public void removeSentRequest(FriendRequest request) {
+        sentRequests.remove(request);
+    }
+
+    public void removeReceivedRequest(FriendRequest request) {
+        receivedRequests.remove(request);
+    }
+
+    // Login method
     public boolean login(String password) {
+        System.out.println("Verifying password for user: " + username);
         if (this.password.equals(password)) {
             System.out.println(username + " has logged in successfully.");
             return true;
@@ -68,70 +98,10 @@ public class User {
         }
     }
 
-    
-     // simulates user logout.
-     
+    // Logout method
     public void logout() {
-        System.out.println(username + " has logged out.");
-    }
-
-    
-     // resets the user's password to a new value.
-
-    public void resetPassword(String newPassword) {
-        this.password = newPassword;
-        System.out.println("Password has been reset for user " + username);
-    }
-
-    
-     // updates the user's profile with a new username and email.
-
-    public void updateProfile(String username, String email) {
-        this.username = username;
-        this.email = email;
-        System.out.println("Profile updated for user " + userID);
-    }
-
-    
-     // retrieves the list of tasks assigned to the user.
-
-    public List<Task> getAssignedTasks() {
-        return assignedTasks;
-    }
-
-    
-     // assigns a new task to the user.
-
-    public void assignTask(Task task) {
-        assignedTasks.add(task);
-    }
-
-    
-     // removes a task from the user's assigned tasks.
-
-    public void removeTask(Task task) {
-        assignedTasks.remove(task);
-    }
-
-    // Getters and setters for userID, username, email, and role
-
-    public String getUserID() {
-        return userID;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public UserRole getRole() {
-        return role;
+        // Logout logic...
     }
 }
+
+
