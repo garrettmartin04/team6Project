@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Study Flashcards</title>
+  <link rel="stylesheet" href="styles.css">
   <script>
     let currentSet = null;
     let currentFlashcardIndex = 0;
-    let score = 0;
 
     async function loadFlashcardSets() {
       const response = await fetch('/flashcards/all');
@@ -61,21 +61,49 @@
   </script>
 </head>
 <body>
-  <div id="selection-container">
-    <h1>Select a Flashcard Set to Study</h1>
-    <select id="flashcard-set-select">
-      <option value="" disabled selected>Select a flashcard set</option>
-    </select>
-    <button onclick="startStudying()">Start Studying</button>
-  </div>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav">
+      <div class="logo">
+        <h1>NoteStream</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-  <div id="study-container" style="display:none;">
-    <h2 id="flashcard-question"></h2>
-    <p id="flashcard-answer" style="font-weight:bold;"></p>
-    <button onclick="revealAnswer()">Reveal Answer</button>
-    <button onclick="nextFlashcard()">Next Flashcard</button>
-  </div>
+  <!-- Main Content -->
+  <section class="hero">
+    <div class="hero-content">
+      <div id="selection-container">
+        <h1>Select a Flashcard Set to Study</h1>
+        <select id="flashcard-set-select">
+          <option value="" disabled selected>Select a flashcard set</option>
+        </select>
+        <button class="cta-button" onclick="startStudying()">Start Studying</button>
+      </div>
+
+      <div id="study-container" style="display:none;">
+        <h2 id="flashcard-question"></h2>
+        <p id="flashcard-answer" style="font-weight:bold;"></p>
+        <button class="cta-button" onclick="revealAnswer()">Reveal Answer</button>
+        <button class="cta-button" onclick="nextFlashcard()">Next Flashcard</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2024 NoteStream. All rights reserved.</p>
+  </footer>
 </body>
 </html>
+
 
 
