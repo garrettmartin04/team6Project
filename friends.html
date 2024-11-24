@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Friends - NoteStream</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Add the following CSS to enhance the styling */
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+        }
+
+        /* Container for the main content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Style for the friend sections */
+        .friend-section {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .friend-section h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .friend-section input[type="text"] {
+            width: calc(100% - 120px);
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .friend-section button {
+            padding: 0.75rem 1.5rem;
+            background-color: #667eea;
+            color: #fff;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .friend-section button:hover {
+            background-color: #556cd6;
+        }
+
+        /* Style for lists */
+        .friend-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .friend-section li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .friend-section li:last-child {
+            border-bottom: none;
+        }
+
+        .friend-section li span {
+            font-size: 1rem;
+            color: #4a5568;
+        }
+
+        .friend-section li button {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            background-color: #e53e3e;
+        }
+
+        .friend-section li button:hover {
+            background-color: #c53030;
+        }
+
+        /* Header styling */
+        .header {
+            background-color: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 0;
+        }
+
+        .nav {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+        }
+
+        .logo h1 {
+            margin: 0;
+            color: #667eea;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+
+        .nav-links li {
+            margin-left: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        /* Footer styling */
+        .footer {
+            background-color: #fff;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+            color: #718096;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-links li {
+                margin: 0.5rem 0;
+            }
+
+            .friend-section input[type="text"] {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .friend-section button {
+                width: 100%;
+            }
+
+            .friend-section li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .friend-section li button {
+                margin-top: 0.5rem;
+                width: 100%;
+            }
+        }
+    </style>
+    <script>
+        let currentUserId = null; // Set this to the logged-in user's ID
+
+        // Function to load friends
+        async function loadFriends() {
+            const response = await fetch(`/user/${currentUserId}/friends`);
+            if (response.ok) {
+                const friends = await response.json();
+                const friendList = document.getElementById('friendList');
+                friendList.innerHTML = '';
+                if (friends.length === 0) {
+                    friendList.innerHTML = '<p>You have no friends yet.</p>';
+                } else {
+                    friends.forEach(friend => {
+                        const li = document.createElement('li');
+                        const span = document.createElement('span');
+                        span.textContent = friend.username;
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Delete Friend';
+                        deleteButton.onclick = () => deleteFriend(friend.userId);
+                        li.appendChild(span);
+                        li.appendChild(deleteButton);
+                        friendList.appendChild(li);
+                    });
+                }
+            } else {
+                console.error('Failed to load friends.');
+            }
+        }
+
+        // Function to load received friend requests
+        async function loadFriendRequests() {
+            const response = await fetch(`/user/${currentUserId}/friends/requests`);
+            if (response.ok) {
+                const requests = await response.json();
+                const requestList = document.getElementById('requestList');
+                requestList.innerHTML = '';
+                if (requests.length === 0) {
+                    requestList.innerHTML = '<p>No pending friend requests.</p>';
+                } else {
+                    requests.forEach(request => {
+                        const li = document.createElement('li');
+                        const span = document.createElement('span');
+                        span.textContent = request.senderUsername;
+                        const acceptButton = document.createElement('button');
+                        acceptButton.textContent = 'Accept';
+                        acceptButton.onclick = () => acceptFriendRequest(request.requestId);
+                        li.appendChild(span);
+                        li.appendChild(acceptButton);
+                        requestList.appendChild(li);
+                    });
+                }
+            } else {
+                console.error('Failed to load friend requests.');
+            }
+        }
+
+        // Function to send a friend request
+        async function sendFriendRequest() {
+            const receiverUsername = document.getElementById('receiverUsername').value.trim();
+            if (!receiverUsername) {
+                alert('Please enter a username.');
+                return;
+            }
+            const response = await fetch(`/user/${currentUserId}/friends/request?receiverUsername=${receiverUsername}`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                alert('Friend request sent.');
+                document.getElementById('receiverUsername').value = '';
+            } else {
+                const error = await response.text();
+                alert('Error: ' + error);
+            }
+        }
+
+        // Function to accept a friend request
+        async function acceptFriendRequest(requestId) {
+            const response = await fetch(`/user/${currentUserId}/friends/accept?requestId=${requestId}`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                alert('Friend request accepted.');
+                loadFriendRequests();
+                loadFriends();
+            } else {
+                const error = await response.text();
+                alert('Error: ' + error);
+            }
+        }
+
+        // Function to delete a friend
+        async function deleteFriend(friendId) {
+            const response = await fetch(`/user/${currentUserId}/friends/${friendId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                alert('Friend deleted.');
+                loadFriends();
+            } else {
+                const error = await response.text();
+                alert('Error: ' + error);
+            }
+        }
+
+        // On page load
+        window.onload = function() {
+            // You should set currentUserId based on your authentication logic
+            currentUserId = localStorage.getItem('userId');
+            if (!currentUserId) {
+                alert('You must be logged in to view this page.');
+                window.location.href = 'login.html';
+            } else {
+                loadFriends();
+                loadFriendRequests();
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav">
+            <div class="logo">
+                <h1>NoteStream</h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html#home">Home</a></li>
+                    <li><a href="index.html#features">Features</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="friends.html">Friends</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <section class="section">
+            <h1>Friends</h1>
+
+            <!-- Send Friend Request -->
+            <div class="friend-section">
+                <h2>Send Friend Request</h2>
+                <div style="display: flex; flex-wrap: wrap; align-items: center;">
+                    <input type="text" id="receiverUsername" placeholder="Enter username">
+                    <button onclick="sendFriendRequest()">Send Request</button>
+                </div>
+            </div>
+
+            <!-- Pending Friend Requests -->
+            <div class="friend-section">
+                <h2>Pending Friend Requests</h2>
+                <ul id="requestList">
+                    <!-- Friend requests will be populated here -->
+                </ul>
+            </div>
+
+            <!-- Friend List -->
+            <div class="friend-section">
+                <h2>Your Friends</h2>
+                <ul id="friendList">
+                    <!-- Friends will be populated here -->
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 NoteStream. All rights reserved.</p>
+    </footer>
+</body>
+</html>

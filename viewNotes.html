@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Notes - NoteStream</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Styles for the viewNotes page */
+    body {
+      background-color: #f8f9fa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 6rem 2rem 2rem;
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .note-card {
+      background-color: #fff;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .note-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .note-card h3 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .note-card p {
+      color: #4a5568;
+      max-height: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 2rem;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 800px;
+      border-radius: 0.5rem;
+      position: relative;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .container {
+        padding: 6rem 1rem 1rem;
+      }
+    }
+  </style>
+  <script>
+    let currentUserId = null;
+
+    // Function to load notes
+    async function loadNotes() {
+      const response = await fetch(`/notes/accessible?userId=${currentUserId}`);
+      if (response.ok) {
+        const notes = await response.json();
+        const notesGrid = document.getElementById('notesGrid');
+        notesGrid.innerHTML = '';
+
+        if (notes.length === 0) {
+          notesGrid.innerHTML = '<p>You have no notes yet.</p>';
+        } else {
+          notes.forEach(note => {
+            const noteCard = document.createElement('div');
+            noteCard.className = 'note-card';
+            noteCard.onclick = () => openNoteModal(note.noteId);
+
+            const title = document.createElement('h3');
+            title.textContent = note.title;
+
+            const contentPreview = document.createElement('p');
+            contentPreview.textContent = note.contentPreview || '';
+
+            noteCard.appendChild(title);
+            noteCard.appendChild(contentPreview);
+            notesGrid.appendChild(noteCard);
+          });
+        }
+      } else {
+        console.error('Failed to load notes.');
+      }
+    }
+
+    // Function to open note in a modal
+    async function openNoteModal(noteId) {
+      const response = await fetch(`/notes/${noteId}?userId=${currentUserId}`);
+      if (response.ok) {
+        const note = await response.json();
+        document.getElementById('modalTitle').textContent = note.title;
+        document.getElementById('modalContent').textContent = note.content;
+        document.getElementById('noteModal').style.display = 'block';
+      } else {
+        const error = await response.text();
+        alert('Error: ' + error);
+      }
+    }
+
+    // Function to close modal
+    function closeModal() {
+      document.getElementById('noteModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+      const modal = document.getElementById('noteModal');
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // On page load
+    window.onload = function() {
+      currentUserId = localStorage.getItem('userId');
+      if (!currentUserId) {
+        alert('You must be logged in to view this page.');
+        window.location.href = 'login.html';
+      } else {
+        loadNotes();
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav">
+      <div class="logo">
+        <h1>NoteStream</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="friends.html">Friends</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <h2>Your Notes</h2>
+    <div class="notes-grid" id="notesGrid">
+      <!-- Notes will be populated here -->
+    </div>
+  </div>
+
+  <!-- Note Modal -->
+  <div id="noteModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2 id="modalTitle">Note Title</h2>
+      <p id="modalContent">Note content will be displayed here.</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2024 NoteStream. All rights reserved.</p>
+  </footer>
+</body>
+</html>

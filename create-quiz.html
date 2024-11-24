@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Quiz</title>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    function addQuestionField() {
+      const container = document.getElementById('questions-container');
+      const questionDiv = document.createElement('div');
+      questionDiv.innerHTML = `
+        <input type="text" name="prompt" placeholder="Question Prompt" required>
+        <input type="text" name="answer" placeholder="Answer" required>
+        <hr>
+      `;
+      container.appendChild(questionDiv);
+    }
+
+    async function submitQuiz(event) {
+      event.preventDefault();
+      const title = document.getElementById('quiz-title').value;
+      const questionElements = document.querySelectorAll('#questions-container > div');
+      const questions = Array.from(questionElements).map(div => {
+        return {
+          prompt: div.querySelector('input[name="prompt"]').value,
+          answer: div.querySelector('input[name="answer"]').value
+        };
+      });
+
+      const response = await fetch('/quizzes/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, questions })
+      });
+
+      const data = await response.text();
+      alert(data);
+      window.location.href = '/';
+    }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav">
+      <div class="logo">
+        <h1>NoteStream</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#home">Home</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Create a New Quiz</h1>
+      <form onsubmit="submitQuiz(event)">
+        <input type="text" id="quiz-title" placeholder="Quiz Title" required><br><br>
+        <div id="questions-container">
+          <!-- Questions will be added here -->
+        </div>
+        <button class="cta-button" type="button" onclick="addQuestionField()">Add Question</button><br><br>
+        <button class="cta-button" type="submit">Create Quiz</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2024 NoteStream. All rights reserved.</p>
+  </footer>
+</body>
+</html>
+
