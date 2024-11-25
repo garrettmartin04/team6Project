@@ -97,7 +97,6 @@ public class User {
 
     // Logout method
     public void logout() {
-        // Logout logic...
     }
 }
 
