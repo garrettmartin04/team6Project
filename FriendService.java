@@ -60,7 +60,5 @@ public class FriendService {
         userRepository.save(user);
         userRepository.save(friend);
     }
-
-    // Additional methods for retrieving friends and requests
 }
 

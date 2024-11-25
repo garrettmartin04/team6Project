@@ -3,33 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <title>Notes - NoteStream</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
-        /* Add styles as needed */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        .note-section {
-            background-color: #fff;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        body {
+            line-height: 1.6;
+            background: #f8f9fa;
         }
-        .note-section h2 {
-            margin-bottom: 1rem;
-            color: #333;
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
         }
-        .note-list li {
-            margin-bottom: 1rem;
+
+        .nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Container */
+        .container {
+            margin: 6rem auto 0;
+            padding: 2rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        .section h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #1a202c;
+        }
+
+        /* Note Section */
+        .note-section {
+            margin-bottom: 2rem;
+        }
+
+        .note-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .note-section input,
+        .note-section textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+        }
+
+        .note-section button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .note-section button:hover {
+            background-color: #556cd6;
+        }
+
+        /* Note List */
+        .note-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .note-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            background-color: #f8f9fa;
+        }
+
+        .note-list li div {
+            display: flex;
+            align-items: center;
+        }
+
         .note-actions button {
-            margin-right: 0.5rem;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .note-actions button:hover {
+            background-color: #556cd6;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a202c;
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .footer p {
+            font-size: 0.9rem;
         }
     </style>
     <script>
@@ -235,9 +364,9 @@ if (friendsResponse.ok) {
             <!-- Create Note -->
             <div class="note-section">
                 <h2>Create a New Note</h2>
-                <input type="text" id="noteTitle" placeholder="Note Title" style="width: 100%; margin-bottom: 1rem;">
-                <textarea id="noteContent" placeholder="Note Content" rows="5" style="width: 100%;"></textarea>
-                <button onclick="createNote()" style="margin-top: 1rem;">Create Note</button>
+                <input type="text" id="noteTitle" placeholder="Note Title">
+                <textarea id="noteContent" placeholder="Note Content" rows="5"></textarea>
+                <button onclick="createNote()">Create Note</button>
             </div>
 
             <!-- List of Notes -->
@@ -256,4 +385,5 @@ if (friendsResponse.ok) {
     </footer>
 </body>
 </html>
+
 

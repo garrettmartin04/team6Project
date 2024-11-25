@@ -29,15 +29,12 @@ public class User {
         this.password = password;
         this.role = role;
 
-        // Initialize new lists
+        // initialize new lists
         this.friends = new ArrayList<>();
         this.sentRequests = new ArrayList<>();
         this.receivedRequests = new ArrayList<>();
     }
-
-    // Existing methods...
-
-    // Getters and setters for new fields
+    // getters/setters
     public String getUserID() {
         return userID;
     }

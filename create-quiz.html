@@ -1,81 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Create Quiz</title>
-  <link rel="stylesheet" href="styles.css">
-  <script>
-    function addQuestionField() {
-      const container = document.getElementById('questions-container');
-      const questionDiv = document.createElement('div');
-      questionDiv.innerHTML = `
-        <input type="text" name="prompt" placeholder="Question Prompt" required>
-        <input type="text" name="answer" placeholder="Answer" required>
-        <hr>
-      `;
-      container.appendChild(questionDiv);
-    }
-
-    async function submitQuiz(event) {
-      event.preventDefault();
-      const title = document.getElementById('quiz-title').value;
-      const questionElements = document.querySelectorAll('#questions-container > div');
-      const questions = Array.from(questionElements).map(div => {
-        return {
-          prompt: div.querySelector('input[name="prompt"]').value,
-          answer: div.querySelector('input[name="answer"]').value
-        };
-      });
-
-      const response = await fetch('/quizzes/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, questions })
-      });
-
-      const data = await response.text();
-      alert(data);
-      window.location.href = '/';
-    }
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Creator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <!-- Header -->
-  <header class="header">
-    <div class="nav">
-      <div class="logo">
-        <h1>NoteStream</h1>
-      </div>
-      <nav>
-        <ul class="nav-links">
-          <li><a href="index.html#home">Home</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Create a New Quiz</h1>
-      <form onsubmit="submitQuiz(event)">
-        <input type="text" id="quiz-title" placeholder="Quiz Title" required><br><br>
-        <div id="questions-container">
-          <!-- Questions will be added here -->
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+<nav class="bg-white shadow-lg">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex space-x-4">
+                <button 
+                    onclick="window.location.href='index.html'" 
+                    class="px-4 py-2 rounded-md hover:bg-gray-100 text-gray-700 font-medium"
+                >
+                    Home
+                </button>
+                <button 
+                    onclick="window.location.href='create-quiz.html'" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+                >
+                    Create Quiz
+                </button>
+                <button 
+                    onclick="window.location.href='take-quiz.html'" 
+                    class="px-4 py-2 rounded-md hover:bg-gray-100 text-gray-700 font-medium"
+                >
+                    Take Quiz
+                </button>
+            </div>
         </div>
-        <button class="cta-button" type="button" onclick="addQuestionField()">Add Question</button><br><br>
-        <button class="cta-button" type="submit">Create Quiz</button>
-      </form>
     </div>
-  </section>
+</nav>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>&copy; 2024 NoteStream. All rights reserved.</p>
-  </footer>
+    <div class="max-w-3xl mx-auto py-8">
+        <div class="bg-white rounded-lg shadow-xl p-8">
+            <div class="border-b pb-6 mb-6">
+                <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">
+                    Create a New Quiz
+                </h1>
+                
+                <div class="space-y-4">
+                    <div>
+                        <input 
+                            type="text" 
+                            id="quizTitle" 
+                            placeholder="Quiz Title"
+                            class="w-full p-2 border rounded-md"
+                        >
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <input 
+                            type="number" 
+                            id="timeLimit" 
+                            placeholder="Time Limit (minutes)"
+                            class="p-2 border rounded-md"
+                        >
+                        <input 
+                            type="number" 
+                            id="passingScore" 
+                            placeholder="Passing Score (%)"
+                            class="p-2 border rounded-md"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-800">Questions</h2>
+                    <span class="text-sm text-gray-500" id="questionCount">
+                        Total Questions: 0
+                    </span>
+                </div>
+
+                <div id="questions-container" class="space-y-6 mb-8 p-4 bg-gray-50 rounded-lg min-h-[200px]">
+                    <!-- Questions will be added here -->
+                </div>
+
+                <button 
+                    onclick="addQuestion()"
+                    class="flex items-center text-blue-600 hover:text-blue-800"
+                >
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Question
+                </button>
+
+                <div class="border-t pt-6 mt-6">
+                    <h2 class="text-lg font-medium text-gray-800 mb-4">Quiz Settings</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="shuffleQuestions" class="mr-2">
+                                <label for="shuffleQuestions">Shuffle questions</label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="showResultsImmediately" class="mr-2">
+                                <label for="showResultsImmediately">Show results immediately</label>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="allowRetry" class="mr-2">
+                                <label for="allowRetry">Allow retry</label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="requireLogin" class="mr-2">
+                                <label for="requireLogin">Require login</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4 pt-6">
+                    <button 
+                        onclick="saveDraft()"
+                        class="px-4 py-2 border rounded-md hover:bg-gray-50"
+                    >
+                        Save Draft
+                    </button>
+                    <button 
+                        onclick="createQuiz()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                        Create Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questionCounter = 0;
+
+        function createOptionHTML(questionId, optionId) {
+            return `
+                <div class="flex items-center space-x-2" id="option-${questionId}-${optionId}">
+                    <input 
+                        type="checkbox" 
+                        class="w-4 h-4"
+                        onchange="updateCorrectAnswer(${questionId}, ${optionId})"
+                    >
+                    <input 
+                        type="text" 
+                        placeholder="Enter option text"
+                        class="flex-1 p-2 border rounded-md"
+                    >
+                    <button 
+                        onclick="deleteOption(${questionId}, ${optionId})"
+                        class="text-red-500 hover:text-red-700"
+                    >
+                        Delete
+                    </button>
+                </div>
+            `;
+        }
+
+        function addQuestion() {
+            questionCounter++;
+            const questionId = questionCounter;
+            
+            const questionHTML = `
+                <div class="bg-white p-4 rounded-lg shadow border border-gray-200" id="question-${questionId}">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-medium">Question ${questionId}</h3>
+                        <div class="flex space-x-2">
+                            <button 
+                                onclick="deleteQuestion(${questionId})"
+                                class="text-gray-600 hover:text-red-600"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <input 
+                            type="text" 
+                            placeholder="Enter your question"
+                            class="w-full p-2 border rounded-md"
+                        >
+                        <div class="options-container">
+                            ${createOptionHTML(questionId, 1)}
+                            ${createOptionHTML(questionId, 2)}
+                        </div>
+                        <button 
+                            onclick="addOption(${questionId})"
+                            class="text-blue-600 hover:text-blue-800"
+                        >
+                            + Add Another Option
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('questions-container').insertAdjacentHTML('beforeend', questionHTML);
+            updateQuestionCount();
+        }
+
+        function deleteQuestion(questionId) {
+            const question = document.getElementById(`question-${questionId}`);
+            if (document.getElementById('questions-container').children.length > 1) {
+                question.remove();
+                updateQuestionCount();
+            } else {
+                alert('You must have at least one question');
+            }
+        }
+
+        function addOption(questionId) {
+            const optionsContainer = document.querySelector(`#question-${questionId} .options-container`);
+            const newOptionId = optionsContainer.children.length + 1;
+            optionsContainer.insertAdjacentHTML('beforeend', createOptionHTML(questionId, newOptionId));
+        }
+
+        function deleteOption(questionId, optionId) {
+            const optionsContainer = document.querySelector(`#question-${questionId} .options-container`);
+            if (optionsContainer.children.length > 2) {
+                document.getElementById(`option-${questionId}-${optionId}`).remove();
+            } else {
+                alert('Each question must have at least two options');
+            }
+        }
+
+        function updateQuestionCount() {
+            const count = document.getElementById('questions-container').children.length;
+            document.getElementById('questionCount').textContent = `Total Questions: ${count}`;
+        }
+
+        function saveDraft() {
+            const quizData = collectQuizData();
+            quizData.status = 'draft';
+            localStorage.setItem(`quiz_draft_${Date.now()}`, JSON.stringify(quizData));
+            alert('Draft saved successfully!');
+        }
+
+        function createQuiz() {
+            const quizData = collectQuizData();
+            
+            // Validation
+            if (!quizData.title.trim()) {
+                alert('Please enter a quiz title');
+                return;
+            }
+            if (!quizData.timeLimit || quizData.timeLimit <= 0) {
+                alert('Please enter a valid time limit');
+                return;
+            }
+            if (!quizData.passingScore || quizData.passingScore < 0 || quizData.passingScore > 100) {
+                alert('Please enter a valid passing score (0-100)');
+                return;
+            }
+
+            quizData.status = 'published';
+            localStorage.setItem(`quiz_${Date.now()}`, JSON.stringify(quizData));
+            alert('Quiz created successfully!');
+            
+            if (confirm('Would you like to create another quiz?')) {
+                resetForm();
+            }
+        }
+
+        function collectQuizData() {
+            const questions = Array.from(document.getElementById('questions-container').children).map(questionEl => {
+                const inputs = questionEl.querySelectorAll('input[type="text"]');
+                const options = Array.from(questionEl.querySelectorAll('.options-container > div')).map(optionEl => ({
+                    text: optionEl.querySelector('input[type="text"]').value,
+                    isCorrect: optionEl.querySelector('input[type="checkbox"]').checked
+                }));
+
+                return {
+                    text: inputs[0].value,
+                    options: options
+                };
+            });
+
+            return {
+                title: document.getElementById('quizTitle').value,
+                timeLimit: document.getElementById('timeLimit').value,
+                passingScore: document.getElementById('passingScore').value,
+                questions: questions,
+                settings: {
+                    shuffleQuestions: document.getElementById('shuffleQuestions').checked,
+                    showResultsImmediately: document.getElementById('showResultsImmediately').checked,
+                    allowRetry: document.getElementById('allowRetry').checked,
+                    requireLogin: document.getElementById('requireLogin').checked
+                }
+            };
+        }
+
+        function resetForm() {
+            document.getElementById('quizTitle').value = '';
+            document.getElementById('timeLimit').value = '';
+            document.getElementById('passingScore').value = '';
+            document.getElementById('questions-container').innerHTML = '';
+            document.getElementById('shuffleQuestions').checked = false;
+            document.getElementById('showResultsImmediately').checked = false;
+            document.getElementById('allowRetry').checked = false;
+            document.getElementById('requireLogin').checked = false;
+            questionCounter = 0;
+            addQuestion(); // Add initial question
+        }
+
+        // Initialize with one question
+        addQuestion();
+    </script>
 </body>
 </html>
 
