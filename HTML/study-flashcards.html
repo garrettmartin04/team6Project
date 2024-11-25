@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Flashcards - NoteStream</title>
+    <style>
+        /* Previous styles remain the same */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .logo h1 {
+            color: #2563eb;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .header ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .header a {
+            text-decoration: none;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .section.hero {
+            background-color: #f3f4f6;
+            min-height: calc(100vh - 140px);
+            padding: 4rem 2rem;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .flashcard-sets {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .flashcard-set {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-sets-message {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .flashcard-set-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .flashcard-set-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .flashcard-set-meta {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .flashcard-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .button {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .button.edit {
+            background-color: #9ca3af;
+        }
+
+        .button.delete {
+            background-color: #dc2626;
+        }
+
+        .create-new {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        /* Study container styles */
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>NoteStream</h1>
+        </div>
+        <ul>
+            <li><a href="index.html#home">Home</a></li>
+            <li><a href="index.html#features">Features</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+    </header>
+
+    <section class="section hero">
+        <div class="hero-content">
+            <div id="selection-container">
+                <h1>Select a Flashcard Set to Study</h1>
+                <div id="flashcard-sets" class="flashcard-sets">
+                    <!-- Flashcard sets will be loaded here dynamically -->
+                </div>
+                <div class="create-new">
+                    <a href="create-flashcards.html" class="button">Create New Flashcard Set</a>
+                </div>
+            </div>
+
+            <div id="study-container" style="display: none;">
+                <h1>Studying: <span id="set-title"></span></h1>
+                <div class="study-card">
+                    <h2 id="flashcard-question"></h2>
+                    <br>
+                    <div id="flashcard-answer" style="display: none;"></div>
+                    <br>
+                    <div class="study-controls">
+                        <button class="button" onclick="toggleAnswer()">Reveal Answer</button>
+                        <button class="button" onclick="nextCard()">Next Card</button>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="delete-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Delete Flashcard Set</h2>
+            <p>Are you sure you want to delete this flashcard set? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="button delete" onclick="deleteSet()">Delete</button>
+                <button class="button" onclick="cancelDelete()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSetId = null;
+        let currentStudySet = null;
+        let currentCardIndex = 0;
+
+        // Load flashcard sets when the page loads
+        window.addEventListener('DOMContentLoaded', loadFlashcardSets);
+
+        function loadFlashcardSets() {
+            const container = document.getElementById('flashcard-sets');
+            const sets = JSON.parse(localStorage.getItem('flashcardSets') || '[]');
+
+            if (sets.length === 0) {
+                container.innerHTML = `
+                    <div class="no-sets-message">
+                        <p>You haven't created any flashcard sets yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sets.map(set => `
+                <div class="flashcard-set" data-set-id="${set.id}">
+                    <div class="flashcard-set-header">
+                        <h2 class="flashcard-set-title">${set.title}</h2>
+                        <div class="flashcard-actions">
+                            <button class="button" onclick="startStudying('${set.id}')">Study</button>
+                            <button class="button edit" onclick="editSet('${set.id}')">Edit</button>
+                            <button class="button delete" onclick="confirmDelete('${set.id}')">Delete</button>
+                        </div>
+                    </div>
+                    <div class="flashcard-set-meta">
+                        ${set.cards.length} cards • ${getLastStudiedText(set.lastStudied)} • ${set.mastery}% mastery
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getLastStudiedText(lastStudied) {
+            if (!lastStudied) return 'Never studied';
+            const date = new Date(lastStudied);
+            const now = new Date();
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Studied today';
+            if (diffDays === 1) return 'Studied yesterday';
+            return `Last studied ${diffDays} days ago`;
+        }
+
+        function startStudying(setId) {
+            const sets = JSON.parse(localStorage.getItem('flashcardSets') || '[]');
+            currentStudySet = sets.find(set => set.id === setId);
+            
+            if (!currentStudySet) return;
+
+            document.getElementById('selection-container').style.display = 'none';
+            document.getElementById('study-container').style.display = 'block';
+            document.getElementById('set-title').textContent = currentStudySet.title;
+            
+            currentCardIndex = 0;
+            showCurrentCard();
+            updateProgressBar();
+        }
+
+        function showCurrentCard() {
+            const card = currentStudySet.cards[currentCardIndex];
+            document.getElementById('flashcard-question').textContent = card.front;
+            document.getElementById('flashcard-answer').textContent = card.back;
+            document.getElementById('flashcard-answer').style.display = 'none';
+        }
+
+        function toggleAnswer() {
+            const answer = document.getElementById('flashcard-answer');
+            const button = document.querySelector('.study-controls .button');
+            if (answer.style.display === 'none') {
+                answer.style.display = 'block';
+                button.textContent = 'Hide Answer';
+            } else {
+                answer.style.display = 'none';
+                button.textContent = 'Reveal Answer';
+            }
+        }
+
+        function nextCard() {
+            if (!currentStudySet) return;
+            
+            currentCardIndex++;
+            if (currentCardIndex >= currentStudySet.cards.length) {
+                currentCardIndex = 0;
+                // Update last studied date and save
+                currentStudySet.lastStudied = new Date().toISOString();
+                saveStudyProgress();
+                alert('You have completed the set!');
+            }
+            
+            showCurrentCard();
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const progress = (currentCardIndex / currentStudySet.cards.length) * 100;
+            document.querySelector('.progress').style.width = `${progress}%`;
+        }
+
+        function saveStudyProgress() {
+            const sets = JSON.parse(localStorage.getItem('flashcardSets') || '[]');
+            const index = sets.findIndex(set => set.id === currentStudySet.id);
+            if (index !== -1) {
+                sets[index] = currentStudySet;
+                localStorage.setItem('flashcardSets', JSON.stringify(sets));
+            }
+        }
+
+        function editSet(setId) {
+            window.location.href = `create-flashcards.html?edit=${setId}`;
+        }
+
+        function confirmDelete(setId) {
+            currentSetId = setId;
+            document.getElementById('delete-modal').style.display = 'flex';
+        }
+
+        function deleteSet() {
+            const sets = JSON.parse(localStorage.getItem('flashcardSets') || '[]');
+            const newSets = sets.filter(set => set.id !== currentSetId);
+            localStorage.setItem('flashcardSets', JSON.stringify(newSets));
+            loadFlashcardSets();
+            cancelDelete();
+        }
+
+        function cancelDelete() {
+            document.getElementById('delete-modal').style.display = 'none';
+            currentSetId = null;
+        }
+    </script>
+</body>
+</html>
