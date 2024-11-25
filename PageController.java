@@ -26,6 +26,4 @@ public class PageController {
     public String takeQuizPage() {
         return "take-quiz";
     }
-
-    // Add more page mappings as needed
 }

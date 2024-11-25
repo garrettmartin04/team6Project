@@ -7,23 +7,78 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 
+    <style>
+.header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo h1 {
+            color: #2563eb;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .nav a:hover {
+            color: #2563eb;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
         <nav class="nav">
             <div class="logo">
-                <h2>Logo</h2>
+                <h1>NoteStream</h1>
             </div>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="index.html#features">Features</a>
-                <a href="index.html#about">About</a>
-                <a href="contact.html">Contact</a>
-            </div>
+            <ul>
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#features">Features</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
         </nav>
     </header>
 
-    <main class="contact-container">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h2>NoteStream</h2>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#features">Features</a>
+            <a href="index.html#about">About</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </header>
+
+    <div class="contact-container" role="main">
         <div class="contact-header">
             <h1>Get in Touch</h1>
             <p>Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
@@ -32,68 +87,94 @@
         <div class="contact-grid">
             <div class="contact-info">
                 <h3>Contact Information</h3>
+                
                 <div class="info-item">
                     <h4>Address</h4>
-                    <p>1332 Southern Dr</p>
-                    <p>Statesboro, GA 30458</p>
+                    <p>1332 Southern Dr<br>Statesboro, GA 30458</p>
                 </div>
+
                 <div class="info-item">
                     <h4>Phone</h4>
                     <p>+1 (123) 456-7891</p>
                 </div>
+
                 <div class="info-item">
                     <h4>Email</h4>
                     <p>notestreamsupport@outlook.com</p>
-
                 </div>
+
                 <div class="info-item">
                     <h4>Business Hours</h4>
-                    <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                    <p>Saturday: 10:00 AM - 4:00 PM</p>
-                    <p>Sunday: Closed</p>
-                    
+                    <p>Monday - Friday: 9:00 AM - 6:00 PM<br>
+                    Saturday: 10:00 AM - 4:00 PM<br>
+                    Sunday: Closed</p>
                 </div>
             </div>
 
-            <div class="contact-form">
-                <form id="contact-form">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="subject">Subject</label>
-                        <input type="text" id="subject" name="subject" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message</label>
-                        <textarea id="message" name="message" required></textarea>
-                    </div>
-                    <button type="submit" class="submit-button">Send Message</button>
-                </form>
-            </div>
+            <form id="contact-form" class="contact-form" onsubmit="handleSubmit(event)">
+                <div id="success-message" class="success-message">
+                </div>
+                <div id="error-message" class="error-message">
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="5" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-button">Send Message</button>
+            </form>
         </div>
+    </div>
 
-        
-    </main>
-
-    <footer class="footer">
-        <p>&copy; 2024 NoteStream. All rights reserved.</p>
+    <footer>
+        <p>© 2024 NoteStream. All rights reserved.</p>
     </footer>
 
     <script>
-        $(document).ready(function() {
-            $('#contact-form').on('submit', function(e) {
-                e.preventDefault();
-                // Here you would typically add AJAX code to handle form submission
-                alert('Thank you for your message! We will get back to you soon.');
-                this.reset();
-            });
-        });
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+
+            // Create mailto URL with form data
+            const mailtoUrl = `mailto:notestreamsupport@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+                `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
+            )}`;
+
+            // Open default email client
+            window.location.href = mailtoUrl;
+
+            // Show success message
+            const successMessage = document.getElementById('success-message');
+            successMessage.style.display = 'block';
+
+            // Reset form
+            document.getElementById('contact-form').reset();
+
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
     </script>
 </body>
 </html>

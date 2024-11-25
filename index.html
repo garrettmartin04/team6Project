@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NoteStream</title>
-  <link rel="stylesheet" href="styles.css">
   <style>
     /* Apply styles based on the provided CSS */
     * {
@@ -131,65 +130,6 @@
       }
     }
   </style>
-  <script>
-    async function createFlashcards() {
-      try {
-        const response = await fetch('/flashcards/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ title: 'New Flashcard Set' }),
-        });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        alert(data.message);
-      } catch (error) {
-        console.error('Error creating flashcards:', error);
-        alert('Failed to create flashcards. Please try again later.');
-      }
-    }
-
-    async function studyFlashcards() {
-      try {
-        const response = await fetch('/flashcards/study', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        alert(data.message);
-      } catch (error) {
-        console.error('Error studying flashcards:', error);
-        alert('Failed to load flashcards. Please try again later.');
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const createButton = document.getElementById('create-flashcards');
-      const studyButton = document.getElementById('study-flashcards');
-
-      if (createButton) {
-        createButton.addEventListener('click', (event) => {
-          event.preventDefault();
-          createFlashcards();
-        });
-      }
-
-      if (studyButton) {
-        studyButton.addEventListener('click', (event) => {
-          event.preventDefault();
-          studyFlashcards();
-        });
-      }
-    });
-  </script>
 </head>
 <body>
   <header class="header">
@@ -243,30 +183,33 @@
   <section class="section" id="quizzes">
     <h2>Quizzes</h2>
     <p>Create and take quizzes to test your knowledge.</p>
-    <a href="/create-quiz.html" class="cta-button">Create Quiz</a>
-    <a href="/take-quiz.html" class="cta-button">Take Quiz</a>
+    <br>
+    <a href="create-quiz.html" class="cta-button">Create Quiz</a>
+    <a href="take-quiz.html" class="cta-button">Take Quiz</a>
   </section>
 
   <section class="section" id="flashcards">
     <h2>Flashcards</h2>
     <p>Build and study flashcard sets to improve your memorization.</p>
-    <a href="/create-flashcards.html" class="cta-button">Create Flashcards</a>
-    <a href="/study-flashcards.html" class="cta-button">Study Flashcards</a>
+    <br>
+    <a href="create-flashcards.html" class="cta-button">Create Flashcards</a>
+    <a href="study-flashcards.html" class="cta-button">Study Flashcards</a>
   </section>
-  
 
   <section class="section" id="notes">
     <h2>Notes</h2>
     <p>Take and organize your notes in one place.</p>
-    <a href="/notes.html" class="cta-button">Create Note</a>
-    <a href="/viewNotes.html" class="cta-button">View Notes</a>
+    <br>
+    <a href="notes.html" class="cta-button">Create Note</a>
+    <a href="notes.html" class="cta-button">View Notes</a>
   </section>
 
   <section class="section" id="friends">
     <h2>Friends</h2>
     <p>Collaborate with your friends on notes, flashcards, and quizzes.</p>
-    <a href="/friends.html" class="cta-button">Add Friend</a>
-    <a href="/friends.html" class="cta-button">View Friends</a>
+    <br>
+    <a href="friends.html" class="cta-button">Add Friend</a>
+    <a href="friends.html" class="cta-button">View Friends</a>
   </section>
 
   <footer class="footer">

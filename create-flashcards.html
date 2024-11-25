@@ -1,97 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Create Flashcard Set</title>
-  <link rel="stylesheet" href="styles.css">
-  <script>
-    function addFlashcardField() {
-      const container = document.getElementById('flashcards-container');
-      const flashcardDiv = document.createElement('div');
-      flashcardDiv.innerHTML = `
-        <input type="text" name="question" placeholder="Question" required>
-        <input type="text" name="answer" placeholder="Answer" required>
-        <hr>
-      `;
-      container.appendChild(flashcardDiv);
-    }
-
-    async function submitFlashcardSet(event) {
-      event.preventDefault();
-      const title = document.getElementById('set-title').value;
-      const flashcardElements = document.querySelectorAll('#flashcards-container > div');
-      const flashcards = Array.from(flashcardElements).map(div => {
-        return {
-          question: div.querySelector('input[name="question"]').value,
-          answer: div.querySelector('input[name="answer"]').value
-        };
-      });
-
-      try {
-        const response = await fetch('/flashcards/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, flashcards })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          alert("Error: " + errorText);
-          return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Flashcards - NoteStream</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         }
 
-        const data = await response.text();
-        alert(data); // Displays success message with the ID
-        window.location.href = '/'; // Redirect as needed
-      } catch (error) {
-        console.error('Error:', error);
-        alert("An unexpected error occurred.");
-      }
-    }
+        .header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
 
-    window.onload = function() {
-      // Optionally, add an initial flashcard field
-      addFlashcardField();
-    };
-  </script>
+        .logo h1 {
+            color: #2563eb;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .header ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .header a {
+            text-decoration: none;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .section.hero {
+            background-color: #f3f4f6;
+            min-height: calc(100vh - 140px);
+            padding: 4rem 2rem;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .set-info {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .flashcard {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .flashcard-inputs {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .remove-card {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .button {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .button.secondary {
+            background-color: #9ca3af;
+        }
+
+        .button.secondary:hover {
+            background-color: #6b7280;
+        }
+    </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="nav">
-      <div class="logo">
-        <h1>NoteStream</h1>
-      </div>
-      <nav>
-        <ul class="nav-links">
-          <li><a href="index.html#home">Home</a></li>
-          <li><a href="index.html#features">Features</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Create a New Flashcard Set</h1>
-      <form onsubmit="submitFlashcardSet(event)">
-        <input type="text" id="set-title" placeholder="Set Title" required><br><br>
-        <div id="flashcards-container">
-          <!-- Flashcards will be added here -->
+    <header class="header">
+        <div class="logo">
+            <h1>NoteStream</h1>
         </div>
-        <button class="cta-button" type="button" onclick="addFlashcardField()">Add Flashcard</button><br><br>
-        <button class="cta-button" type="submit">Create Flashcard Set</button>
-      </form>
-    </div>
-  </section>
+        <ul>
+            <li><a href="index.html#home">Home</a></li>
+            <li><a href="index.html#features">Features</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+    </header>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>&copy; 2024 NoteStream. All rights reserved.</p>
-  </footer>
+    <section class="section hero">
+        <div class="hero-content">
+            <h1>Create a New Flashcard Set</h1>
+
+            <div class="set-info">
+                <div class="input-group">
+                    <label for="set-title">Flashcard Set Title</label>
+                    <input type="text" id="set-title" placeholder="Enter a title for your flashcard set" required>
+                </div>
+                <div class="input-group">
+                    <label for="set-description">Description (optional)</label>
+                    <textarea id="set-description" placeholder="Add a description for your flashcard set"></textarea>
+                </div>
+            </div>
+            
+            <div id="flashcards-container">
+                <div class="flashcard">
+                    <button class="remove-card" onclick="removeCard(this)">×</button>
+                    <div class="flashcard-inputs">
+                        <div class="input-group">
+                            <label for="front-1">Front</label>
+                            <textarea id="front-1" placeholder="Enter the question or term"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label for="back-1">Back</label>
+                            <textarea id="back-1" placeholder="Enter the answer or definition"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons-container">
+                <button class="button secondary" onclick="addCard()">Add Flashcard</button>
+                <button class="button" onclick="saveFlashcardSet()">Create Flashcard Set</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let cardCount = 1;
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+
+        // Load existing flashcard set if editing
+        if (editId) {
+            loadFlashcardSet(editId);
+        }
+
+        function addCard() {
+            cardCount++;
+            const container = document.getElementById('flashcards-container');
+            const newCard = document.createElement('div');
+            newCard.className = 'flashcard';
+            newCard.innerHTML = `
+                <button class="remove-card" onclick="removeCard(this)">×</button>
+                <div class="flashcard-inputs">
+                    <div class="input-group">
+                        <label for="front-${cardCount}">Front</label>
+                        <textarea id="front-${cardCount}" placeholder="Enter the question or term"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="back-${cardCount}">Back</label>
+                        <textarea id="back-${cardCount}" placeholder="Enter the answer or definition"></textarea>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newCard);
+        }
+
+        function removeCard(button) {
+            const card = button.closest('.flashcard');
+            if (document.getElementsByClassName('flashcard').length > 1) {
+                card.remove();
+            }
+        }
+
+        function saveFlashcardSet() {
+            const title = document.getElementById('set-title').value;
+            if (!title) {
+                alert('Please enter a title for your flashcard set');
+                return;
+            }
+
+            const flashcards = [];
+            const cards = document.getElementsByClassName('flashcard');
+            
+            for (let card of cards) {
+                const front = card.querySelector('textarea[id^="front"]').value;
+                const back = card.querySelector('textarea[id^="back"]').value;
+                
+                if (front && back) {
+                    flashcards.push({ front, back });
+                }
+            }
+
+            if (flashcards.length === 0) {
+                alert('Please add at least one complete flashcard');
+                return;
+            }
+
+            const flashcardSet = {
+                id: editId || Date.now().toString(),
+                title: title,
+                description: document.getElementById('set-description').value,
+                cards: flashcards,
+                createdAt: new Date().toISOString(),
+                lastStudied: null,
+                mastery: 0
+            };
+
+            // Save to localStorage
+            const existingSets = JSON.parse(localStorage.getItem('flashcardSets') || '[]');
+            if (editId) {
+                const index = existingSets.findIndex(set => set.id === editId);
+                if (index !== -1) {
+                    existingSets[index] = flashcardSet;
+                }
+            } else {
+                existingSets.push(flashcardSet);
+            }
+            localStorage.setItem('flashcardSets', JSON.stringify(existingSets));
+
+            // Redirect to study page
+            window.location.href = 'study-flashcards.html';
+        }
+
+        function loadFlashcardSet(id) {
+            const existingSets = JSON.parse(localStorage.getItem('flashcardSets') || '[]');
+            const set = existingSets.find(set => set.id === id);
+            
+            if (set) {
+                document.getElementById('set-title').value = set.title;
+                document.getElementById('set-description').value = set.description || '';
+                
+                // Clear default card
+                document.getElementById('flashcards-container').innerHTML = '';
+                
+                // Add existing cards
+                set.cards.forEach((card, index) => {
+                    const newCard = document.createElement('div');
+                    newCard.className = 'flashcard';
+                    newCard.innerHTML = `
+                        <button class="remove-card" onclick="removeCard(this)">×</button>
+                        <div class="flashcard-inputs">
+                            <div class="input-group">
+                                <label for="front-${index + 1}">Front</label>
+                                <textarea id="front-${index + 1}" placeholder="Enter the question or term">${card.front}</textarea>
+                            </div>
+                            <div class="input-group">
+                                <label for="back-${index + 1}">Back</label>
+                                <textarea id="back-${index + 1}" placeholder="Enter the answer or definition">${card.back}</textarea>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('flashcards-container').appendChild(newCard);
+                });
+                
+                cardCount = set.cards.length;
+            }
+        }
+    </script>
 </body>
 </html>
 

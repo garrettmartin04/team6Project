@@ -37,7 +37,5 @@ public class NoteService {
 
         return note.getOwner().equals(user) || note.isCollaborator(user);
     }
-
-    // Additional methods for note management...
 }
 
