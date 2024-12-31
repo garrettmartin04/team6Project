@@ -1,4 +1,6 @@
-We are creating a study platform called NoteStream, which provides users with a few different tools that they can use to study and create notes for themselves Among the tools included are notes, quizzes, and flashcards. Users will also be able to add friends and collaborate on notes together. A support email has also been created in case any concerns or bugs arise that need to be addressed.
+Created a study platform called NoteStream, which provides users with a few different tools that they can use to study and create notes for themselves Among the tools included are notes, quizzes, and flashcards. Users will also be able to add friends and collaborate on notes together. A support email has also been created in case any concerns or bugs arise that need to be addressed.
+
+Execution: I developed most of the backend in Java, JavaScript, with alot of CSS and HTML
 
 Notes: 
 Users can create a new note for whatever purpose they desire, and give it a name once they are finished. Additionally, users will be able to edit and delete previouslly saved notes if they desire.
