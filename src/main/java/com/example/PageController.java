@@ -1,5 +1,5 @@
 // PageController.java
-package com.example.NoteStream;
+package com.example;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
