@@ -1,4 +1,4 @@
-package com.example.NoteStream;
+package com.example;
 
 public class NoteService {
     private NoteRepository noteRepository;
