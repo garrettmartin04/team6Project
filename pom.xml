@@ -5,6 +5,9 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
+		<configuration>
+        <mainClass>com.example.NoteStreamApplication</mainClass>
+      </configuration>
 		<version>3.3.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
