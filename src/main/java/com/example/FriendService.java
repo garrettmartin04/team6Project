@@ -1,4 +1,4 @@
-package com.example.NoteStream;
+package com.example;
 
 public class FriendService {
     private UserRepository userRepository;
